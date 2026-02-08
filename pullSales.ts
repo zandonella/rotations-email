@@ -130,8 +130,6 @@ async function UpsertEmailLogs(
         })
         .filter((log) => log !== null) as EmailLogRecord[];
 
-    console.log('email logs:', emailLogs);
-
     const { error } = await supabase
         .from('WishlistEmailLog')
         .upsert(emailLogs, {
