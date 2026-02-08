@@ -11,7 +11,8 @@
         "@aws-sdk/client-ses": "^3.983.0",
         "@react-email/components": "1.0.7",
         "@react-email/tailwind": "2.0.4",
-        "dotenv": "^17.2.3",
+        "@supabase/supabase-js": "^2.95.3",
+        "dotenv": "^17.2.4",
         "node": "^25.6.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"
@@ -21,5 +22,22 @@
         "@types/react": "^19.0.1",
         "@types/react-dom": "^19.0.1",
         "react-email": "5.2.6"
-    }
+    },
+    "description": "",
+    "main": "index.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zandonella/email-microservice.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
+    "bugs": {
+        "url": "https://github.com/zandonella/email-microservice/issues"
+    },
+    "homepage": "https://github.com/zandonella/email-microservice#readme"
 }

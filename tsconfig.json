@@ -5,7 +5,8 @@
         "skipLibCheck": true,
         "strict": true,
         "noEmit": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "allowImportingTsExtensions": true
     },
     "include": ["**/*.ts", "**/*.tsx"],
     "exclude": ["node_modules", ".react-email"]
