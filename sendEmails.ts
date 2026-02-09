@@ -4,7 +4,7 @@ import type { EmailLogRecord } from './lib/types.ts';
 async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
     const { data, error } = await supabase
         .from('WishlistEmailLog')
-        .select('*, CatalogItem(*), Profile(*)')
+        .select('*, CatalogItem(*), Profile(*), MythicSale(*), CatalogSale(*)')
         .eq('Status', 'PENDING');
 
     if (error) {
@@ -33,7 +33,23 @@ function groupEmailLogsByUser(
 function sendEmail(items: EmailLogRecord[]) {
     const senderEmail = items[0].Profile.email;
     console.log(`Sending email to ${senderEmail} with the following items:`);
-    console.log(items.map((item) => item.CatalogItem).map((item) => item.Name));
+    items.forEach((item) => {
+        const itemName = item.CatalogItem
+            ? item.CatalogItem.Name
+            : 'Unknown Item';
+        const saleType = item.SaleType;
+        const price =
+            item.SaleType === 'Mythic'
+                ? item.MythicSale?.Price
+                : item.CatalogSale?.SalePrice;
+
+        const priceDisplay =
+            item.SaleType === 'Mythic'
+                ? `${item.MythicSale?.Price} ${item.MythicSale?.Currency}`
+                : `${item.CatalogSale?.SalePrice} ${item.CatalogSale?.Currency}`;
+        console.log(`- ${itemName} (${saleType} sale) for ${priceDisplay}`);
+    });
+    console.log('---');
 }
 
 async function main() {
