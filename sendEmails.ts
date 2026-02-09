@@ -31,22 +31,18 @@ function groupEmailLogsByUser(
 }
 
 function sendEmail(items: EmailLogRecord[]) {
-    console.log(items);
+    const senderEmail = items[0].Profile.email;
+    console.log(`Sending email to ${senderEmail} with the following items:`);
+    console.log(items.map((item) => item.CatalogItem).map((item) => item.Name));
 }
 
 async function main() {
     const pendingEmailLogs = await getPendingEmailLogs();
-    console.log('Pending Email Logs:', pendingEmailLogs);
-
     const emailLogsByUser = groupEmailLogsByUser(pendingEmailLogs);
-    console.log('Email Logs Grouped by User:', emailLogsByUser);
 
     // Iterate through each user and send emails
     for (const userId in emailLogsByUser) {
         const logs = emailLogsByUser[userId];
-        console.log(
-            `Sending email to UserID: ${userId} with ${logs.length} logs`,
-        );
         sendEmail(logs);
     }
 }
