@@ -55,6 +55,11 @@ export type WishlistRecord = {
 export type ShopType = 'Catalog' | 'Mythic';
 export type EmailStatus = 'PENDING' | 'SENT' | 'FAILED';
 
+export type ProfileRecord = {
+    id: string;
+    email: string;
+};
+
 export type EmailLogRecord = {
     UserID: string;
     ItemID: string;
@@ -62,4 +67,6 @@ export type EmailLogRecord = {
     SaleType: ShopType;
     Status: EmailStatus;
     SentAt: Date | null;
+    CatalogItem: CatalogItemRecord;
+    Profile: ProfileRecord;
 };

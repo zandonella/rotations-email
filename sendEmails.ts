@@ -4,7 +4,7 @@ import type { EmailLogRecord } from './lib/types.ts';
 async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
     const { data, error } = await supabase
         .from('WishlistEmailLog')
-        .select('*')
+        .select('*, CatalogItem(*), Profile(*)')
         .eq('Status', 'PENDING');
 
     if (error) {
@@ -18,16 +18,20 @@ async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
 function groupEmailLogsByUser(
     emailLogs: EmailLogRecord[],
 ): Record<string, EmailLogRecord[]> {
-    const map: Record<string, EmailLogRecord[]> = {};
+    const emailLogsByUser: Record<string, EmailLogRecord[]> = {};
 
     emailLogs.forEach((log) => {
-        if (!map[log.UserID]) {
-            map[log.UserID] = [];
+        if (!emailLogsByUser[log.UserID]) {
+            emailLogsByUser[log.UserID] = [];
         }
-        map[log.UserID].push(log);
+        emailLogsByUser[log.UserID].push(log);
     });
 
-    return map;
+    return emailLogsByUser;
+}
+
+function sendEmail(items: EmailLogRecord[]) {
+    console.log(items);
 }
 
 async function main() {
@@ -36,6 +40,15 @@ async function main() {
 
     const emailLogsByUser = groupEmailLogsByUser(pendingEmailLogs);
     console.log('Email Logs Grouped by User:', emailLogsByUser);
+
+    // Iterate through each user and send emails
+    for (const userId in emailLogsByUser) {
+        const logs = emailLogsByUser[userId];
+        console.log(
+            `Sending email to UserID: ${userId} with ${logs.length} logs`,
+        );
+        sendEmail(logs);
+    }
 }
 
 main();
