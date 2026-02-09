@@ -37,6 +37,7 @@ export type MythicSaleRecord = {
     IsBundle: boolean;
     IncludedItems: string[];
     BundleType: string | null;
+    SaleID: string;
 };
 
 export type CatalogSaleWithItemRecord = CatalogSaleRecord & {
@@ -67,6 +68,10 @@ export type EmailLogRecord = {
     SaleType: ShopType;
     Status: EmailStatus;
     SentAt: Date | null;
+    MythicSaleID?: string | null;
+    CatalogSaleID?: string | null;
     CatalogItem: CatalogItemRecord;
     Profile: ProfileRecord;
+    MythicSale?: MythicSaleRecord | null;
+    CatalogSale?: CatalogSaleRecord | null;
 };

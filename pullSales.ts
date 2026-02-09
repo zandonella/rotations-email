@@ -93,7 +93,7 @@ function buildLookup(
     sales.forEach((sale) => {
         if (isMythicSaleRecord(sale)) {
             sale.IncludedItems.forEach((itemID) => {
-                lookup[itemID] = sale.OfferID;
+                lookup[itemID] = sale.SaleID;
             });
         } else {
             lookup[sale.CatalogItem.ItemID] = sale.SaleID;
@@ -126,6 +126,8 @@ async function UpsertEmailLogs(
                 SaleType: shopType,
                 Status: 'PENDING',
                 SentAt: null,
+                MythicSaleID: shopType === 'Mythic' ? saleID : null,
+                CatalogSaleID: shopType === 'Catalog' ? saleID : null,
             };
         })
         .filter((log) => log !== null) as EmailLogRecord[];
