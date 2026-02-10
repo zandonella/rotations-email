@@ -14,6 +14,7 @@ import {
     Img,
     Row,
     Column,
+    Link,
 } from '@react-email/components';
 
 import type { EmailLogRecord } from '../lib/types';
@@ -303,7 +304,7 @@ export const WishlistNotificationEmail = ({
 
     if (items.length > 1) {
         headerText = `${items.length} items in your wishlist are on sale!`;
-        descriptionText = `Make sure to grab them before the sale ends!`;
+        descriptionText = `Make sure to grab them before the sale ends.`;
     }
 
     return (
@@ -334,11 +335,17 @@ export const WishlistNotificationEmail = ({
                 <Body>
                     <Preview>{previewText}</Preview>
                     <Container className="bg-background text-white rounded-lg mx-auto max-w-150 p-6 font-sans">
-                        <Section className="mb-10.5">
+                        <Section className="mb-2">
                             <Heading className="text-[24px] leading-8 mb-3 text-center">
-                                {headerText}
+                                <Text className="text-white py-1 pr-2 text-3xl font-bold">
+                                    Rotations.lol
+                                </Text>
                             </Heading>
-                            <Text className="text-muted text-[14px] leading-5 mx-auto max-w-125 text-center">
+
+                            <Text className="text-white text-[20px] leading-8 font-semibold mx-auto max-w-125 text-center my-0">
+                                {headerText}
+                            </Text>
+                            <Text className="text-muted text-[14px] leading-5 mx-auto my-0 max-w-125 text-center">
                                 {descriptionText}
                             </Text>
                         </Section>
@@ -347,9 +354,13 @@ export const WishlistNotificationEmail = ({
                                 <ItemCard key={item.SaleID} item={item} />
                             ))}
                         </Section>
-                        <Hr className="mt-0" />
-                        <Text className="text-gray-500 text-[12px] leading-[16px] font-medium mt-[30px] text-center">
-                            Customer Experience Research Team
+                        <Hr className="mt-0 border-muted" />
+
+                        <Text className="text-white py-1 pr-2 text-2xl font-bold text-center mb-0">
+                            Rotations.lol
+                        </Text>
+                        <Text className="text-muted text-sm leading-[16px] my-0 font-medium text-center">
+                            contact@rotations.lol
                         </Text>
                     </Container>
                 </Body>
