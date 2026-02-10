@@ -10,8 +10,8 @@ export type CatalogItemRecord = {
 
 export type CatalogSaleRecord = {
     RiotItemID: number;
-    SaleStartAt: Date;
-    SaleEndAt: Date;
+    SaleStartAt: string;
+    SaleEndAt: string;
     ItemType: number;
     NormalPrice: number;
     SalePrice: number;
@@ -25,10 +25,10 @@ export type sectionType = 'DAILY' | 'WEEKLY' | 'BIWEEKLY' | 'FEATURED';
 
 export type MythicSaleRecord = {
     OfferID: string;
-    SaleStartAt: Date;
+    SaleStartAt: string;
 
     PrimaryItemID: string;
-    SaleEndAt: Date;
+    SaleEndAt: string;
     Price: number;
     Currency: string;
     IsActive: boolean;
