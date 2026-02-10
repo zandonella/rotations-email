@@ -257,18 +257,18 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                     <span
                         className={
                             getTextColor(currency) +
-                            ' inline-block align-middle text-[16px] leading-5 ml-1'
+                            ' inline-block align-middle text-[16px] leading-5 ml-1 font-bold'
                         }
                     >
                         {salePrice}
                     </span>
                     {normalPrice && (
-                        <span className="inline-block align-middle text-muted text-[16px] leading-5 ml-2 line-through">
+                        <span className="inline-block align-middle text-muted text-[14px] leading-5 ml-2 line-through">
                             {normalPrice}
                         </span>
                     )}
                     {percentOff && (
-                        <span className="inline-block align-middle text-primary text-[16px] leading-4.5 ml-2">
+                        <span className="inline-block align-middle text-primary text-[16px] font-bold leading-4.5 ml-2">
                             {percentOff}% off
                         </span>
                     )}
