@@ -295,7 +295,7 @@ function CalculateEndDateAndTime(saleEndAt: string): string {
     return endDate.toLocaleString('en-US', options);
 }
 
-export const WishlistNotificationEmail = ({
+export const WishlistNotificationEmailTemplate = ({
     items,
 }: WishlistNotificationEmailProps) => {
     const previewText = `An item on your wishlist is on sale!`;
@@ -369,8 +369,8 @@ export const WishlistNotificationEmail = ({
     );
 };
 
-WishlistNotificationEmail.PreviewProps = {
+WishlistNotificationEmailTemplate.PreviewProps = {
     items: sampleItems,
 } as WishlistNotificationEmailProps;
 
-export default WishlistNotificationEmail;
+export default WishlistNotificationEmailTemplate;
