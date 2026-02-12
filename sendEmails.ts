@@ -1,5 +1,6 @@
 import { supabase } from './lib/supabase.ts';
-import type { EmailLogRecord } from './lib/types.ts';
+import type { EmailLogRecord, EmailStatus } from './lib/types.ts';
+import { sendWishlistEmail } from './sendRenderedEmail.tsx';
 
 async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
     const { data, error } = await supabase
@@ -30,26 +31,31 @@ function groupEmailLogsByUser(
     return emailLogsByUser;
 }
 
-function sendEmail(items: EmailLogRecord[]) {
+async function sendEmail(items: EmailLogRecord[]) {
     const senderEmail = items[0].Profile.email;
-    console.log(`Sending email to ${senderEmail} with the following items:`);
-    items.forEach((item) => {
-        const itemName = item.CatalogItem
-            ? item.CatalogItem.Name
-            : 'Unknown Item';
-        const saleType = item.SaleType;
-        const price =
-            item.SaleType === 'Mythic'
-                ? item.MythicSale?.Price
-                : item.CatalogSale?.SalePrice;
 
-        const priceDisplay =
-            item.SaleType === 'Mythic'
-                ? `${item.MythicSale?.Price} ${item.MythicSale?.Currency}`
-                : `${item.CatalogSale?.SalePrice} ${item.CatalogSale?.Currency}`;
-        console.log(`- ${itemName} (${saleType} sale) for ${priceDisplay}`);
-    });
-    console.log('---');
+    const result = await sendWishlistEmail(senderEmail, items);
+
+    if (!result.success) {
+        console.error(result.errorMessage);
+    }
+
+    return result.success;
+}
+
+async function updateEmailLogStatuses(
+    logs: EmailLogRecord[],
+    status: EmailStatus,
+) {
+    const { error } = await supabase
+        .from('WishlistEmailLog')
+        .update({ Status: status, SentAt: new Date().toISOString() })
+        .eq('UserID', logs[0].UserID)
+        .eq('Status', 'PENDING');
+
+    if (error) {
+        console.error('Error updating email log statuses:', error);
+    }
 }
 
 async function main() {
@@ -59,7 +65,9 @@ async function main() {
     // Iterate through each user and send emails
     for (const userId in emailLogsByUser) {
         const logs = emailLogsByUser[userId];
-        sendEmail(logs);
+        const succeeded = await sendEmail(logs);
+        const newStatus: EmailStatus = succeeded ? 'SENT' : 'FAILED';
+        await updateEmailLogStatuses(logs, newStatus);
     }
 }
 

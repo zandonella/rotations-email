@@ -187,11 +187,11 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
     function getCurrencyIcon(currency: string) {
         switch (currency) {
             case 'RP':
-                return 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/riot-points-icon.svg';
+                return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/riot-points-icon.svg';
             case 'ME':
-                return 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/mythic-essence-icon.svg';
+                return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/mythic-essence-icon.svg';
             default:
-                return 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/riot-points-icon.svg';
+                return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/riot-points-icon.svg';
         }
     }
 
@@ -204,6 +204,13 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
             default:
                 return 'text-primary';
         }
+    }
+
+    function normalizePhotoURL(url: string): string {
+        if (url.startsWith('//')) {
+            return 'https:' + url;
+        }
+        return url;
     }
 
     function getSaleInfo(item: EmailLogRecord): {
@@ -241,7 +248,7 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 className="rounded-xl my-0 mx-auto"
                 width={250}
                 height={250}
-                src={item.CatalogItem?.ImageURL}
+                src={normalizePhotoURL(item.CatalogItem?.ImageURL)}
             />
             <p className="text-white text-[18px] leading-5 m-0 mt-3">
                 {item.CatalogItem.Name}
@@ -253,7 +260,7 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                         className="inline-block align-middle pb-0.5"
                         width={16}
                         height={16}
-                        src={IconImageLink}
+                        src={normalizePhotoURL(IconImageLink)}
                     />
                     <span
                         className={
