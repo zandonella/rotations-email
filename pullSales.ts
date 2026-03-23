@@ -17,8 +17,9 @@ async function getWishlistedUsersForItems(
 
     const { data, error } = await supabase
         .from('WishlistItem')
-        .select('*')
-        .in('ItemID', itemIDs);
+        .select('*, Profile!inner(EmailStatus)')
+        .in('ItemID', itemIDs)
+        .eq('Profile.EmailStatus', 'active');
 
     if (error) {
         console.error('Error fetching wishlisted users:', error);

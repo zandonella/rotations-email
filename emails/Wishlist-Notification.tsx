@@ -54,8 +54,8 @@ const sampleItems: EmailLogRecord[] = [
             IsActive: false,
             ItemType: 1,
             SaleEndAt: '2026-02-10T00:00:00+00:00',
-            SalePrice: 975,
-            PercentOff: 27,
+            SalePrice: 1350,
+            PercentOff: 0,
             RiotItemID: 17054,
             NormalPrice: 1350,
             SaleStartAt: '2026-02-03T00:00:00+00:00',
@@ -227,6 +227,20 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 saleEndAt: item.MythicSale.SaleEndAt,
             };
         } else if (item.SaleType === 'Catalog' && item.CatalogSale) {
+            let percentOff = item.CatalogSale.PercentOff;
+            let normalPrice = item.CatalogSale.NormalPrice;
+            let salePrice = item.CatalogSale.SalePrice;
+
+            if (normalPrice === salePrice) {
+                return {
+                    salePrice,
+                    normalPrice: undefined,
+                    currency: item.CatalogSale.Currency,
+                    saleEndAt: item.CatalogSale.SaleEndAt,
+                    percentOff: undefined,
+                };
+            }
+
             return {
                 salePrice: item.CatalogSale.SalePrice,
                 normalPrice: item.CatalogSale.NormalPrice,
@@ -321,14 +335,14 @@ export const WishlistNotificationEmailTemplate = ({
                 theme: {
                     extend: {
                         colors: {
-                            background: '#09090b',
-                            sidebar: '#0f0f10',
-                            card: '#18181b',
-                            primary: '#facc15',
-                            secondary: '#27272a',
-                            mythic: '#a855f7',
-                            white: '#fafafa',
-                            muted: '#a1a1aa',
+                            background: '#f4f4f5', // was: #09090b
+                            sidebar: '#e4e4e7', // was: #0f0f10
+                            card: '#ffffff', // was: #18181b
+                            primary: '#facc15', // was: #facc15 (darkened for contrast on light bg)
+                            secondary: '#d4d4d8', // was: #27272a
+                            mythic: '#a855f7', // was: #a855f7 (darkened for contrast on light bg)
+                            white: '#18181b', // was: (text-white #fafafa)
+                            muted: '#71717a', // was: #a1a1aa
                         },
                         fontFamily: {
                             sans: ['Arial', 'sans-serif'],
@@ -341,11 +355,24 @@ export const WishlistNotificationEmailTemplate = ({
                 <Head />
                 <Body>
                     <Preview>{previewText}</Preview>
-                    <Container className="bg-background text-white rounded-lg mx-auto max-w-150 p-6 font-sans">
+                    <Container className=" text-white rounded-lg mx-auto max-w-150 p-6 font-sans">
                         <Section className="mb-2">
                             <Heading className="text-[24px] leading-8 mb-3 text-center">
                                 <Text className="text-white py-1 pr-2 text-3xl font-bold">
-                                    Rotations.lol
+                                    <a
+                                        href="https://rotations.lol"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            color: 'inherit',
+                                            textDecoration: 'none',
+                                        }}
+                                    >
+                                        Rotations
+                                        <span className="text-primary">
+                                            .lol
+                                        </span>
+                                    </a>
                                 </Text>
                             </Heading>
 
@@ -364,10 +391,27 @@ export const WishlistNotificationEmailTemplate = ({
                         <Hr className="mt-0 border-muted" />
 
                         <Text className="text-white py-1 pr-2 text-2xl font-bold text-center mb-0">
-                            Rotations.lol
+                            <a
+                                href="https://rotations.lol"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    color: 'inherit',
+                                    textDecoration: 'none',
+                                }}
+                            >
+                                Rotations
+                                <span className="text-primary">.lol</span>
+                            </a>
                         </Text>
                         <Text className="text-muted text-sm leading-[16px] my-0 font-medium text-center">
-                            contact@rotations.lol
+                            <a
+                                href="mailto:contact@rotations.lol"
+                                className="text-muted"
+                                style={{ color: 'inherit' }}
+                            >
+                                contact@rotations.lol
+                            </a>
                         </Text>
                     </Container>
                 </Body>

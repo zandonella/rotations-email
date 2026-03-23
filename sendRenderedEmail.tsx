@@ -29,8 +29,10 @@ export async function sendWishlistEmail(
         <WishlistNotificationEmailTemplate items={items} />,
     );
 
+    const source = 'Rotations.lol <' + FROM_EMAIL + '>';
+
     const params: SendEmailCommandInput = {
-        Source: FROM_EMAIL,
+        Source: source,
         Destination: {
             ToAddresses: [email],
         },

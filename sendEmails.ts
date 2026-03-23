@@ -5,8 +5,11 @@ import { sendWishlistEmail } from './sendRenderedEmail.tsx';
 async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
     const { data, error } = await supabase
         .from('WishlistEmailLog')
-        .select('*, CatalogItem(*), Profile(*), MythicSale(*), CatalogSale(*)')
-        .eq('Status', 'PENDING');
+        .select(
+            '*, CatalogItem(*), Profile!inner(*), MythicSale(*), CatalogSale(*)',
+        )
+        .eq('Status', 'PENDING')
+        .eq('Profile.EmailStatus', 'active');
 
     if (error) {
         console.error('Error fetching pending email logs:', error);
