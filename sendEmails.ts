@@ -1,6 +1,7 @@
 import { supabase } from './lib/supabase.ts';
 import type { EmailLogRecord, EmailStatus } from './lib/types.ts';
 import { sendWishlistEmail } from './sendRenderedEmail.tsx';
+import Bottleneck from 'bottleneck';
 
 async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
     const { data, error } = await supabase
@@ -61,17 +62,31 @@ async function updateEmailLogStatuses(
     }
 }
 
+async function processEmailLogs(logs: EmailLogRecord[]) {
+    const succeeded = await sendEmail(logs);
+    const newStatus: EmailStatus = succeeded ? 'SENT' : 'FAILED';
+    await updateEmailLogStatuses(logs, newStatus);
+    console.log(
+        `Processed email for user ${logs[0].UserID}: ${newStatus} (${logs.length} items)`,
+    );
+}
+
+const limiter = new Bottleneck({
+    minTime: 100,
+    maxConcurrent: 1,
+});
+
 async function main() {
     const pendingEmailLogs = await getPendingEmailLogs();
     const emailLogsByUser = groupEmailLogsByUser(pendingEmailLogs);
 
-    // Iterate through each user and send emails
-    for (const userId in emailLogsByUser) {
-        const logs = emailLogsByUser[userId];
-        const succeeded = await sendEmail(logs);
-        const newStatus: EmailStatus = succeeded ? 'SENT' : 'FAILED';
-        await updateEmailLogStatuses(logs, newStatus);
-    }
+    await Promise.all(
+        Object.values(emailLogsByUser).map((logs) =>
+            limiter.schedule(() => processEmailLogs(logs)),
+        ),
+    );
+
+    console.log(`Sent ${pendingEmailLogs.length} emails.`);
 }
 
 main();

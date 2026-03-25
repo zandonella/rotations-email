@@ -13,6 +13,7 @@
         "@react-email/components": "1.0.7",
         "@react-email/tailwind": "2.0.4",
         "@supabase/supabase-js": "^2.95.3",
+        "bottleneck": "^2.19.5",
         "dotenv": "^17.2.4",
         "node": "^25.6.0",
         "react": "^19.0.0",
