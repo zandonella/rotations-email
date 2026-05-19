@@ -6,7 +6,9 @@
         "build": "email build",
         "dev": "email dev",
         "export": "email export",
-        "send-emails": "tsx sendEmails.ts"
+        "pull:prod": "node --env-file=.env.prod pullEmails.js",
+        "send-emails": "tsx sendEmails.ts",
+        "send-emails:prod": "tsx --env-file=.env.prod sendEmails.ts"
     },
     "dependencies": {
         "@aws-sdk/client-ses": "^3.983.0",
