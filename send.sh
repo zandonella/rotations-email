@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-# cd "C:\Users\zando\Desktop\mythic-shop-api"
+cd "C:\Users\zando\Desktop\email-microservice"
 
 node pullSales.ts
 
