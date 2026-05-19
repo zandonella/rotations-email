@@ -37,7 +37,7 @@ const sampleItems: EmailLogRecord[] = [
             Name: 'Spirit Blossom Springs Teemo',
             ItemID: 'be602a76-67f4-4fca-a8ae-40254aa6e8a0',
             ImageURL:
-                '//wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/characters/teemo/skins/skin54/images/teemo_splash_tile_54.skins_teemo_skin54.jpg',
+                '//wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/characters/teemo/skins/skin54/images/teemo_splash_tile_54.jpg',
             ItemType: 1,
             ChampionID: 17,
             RiotItemID: 17054,
@@ -87,14 +87,14 @@ const sampleItems: EmailLogRecord[] = [
         MythicSale: null,
         CatalogSale: {
             SaleID: '24270463-7299-4a9d-b405-a0969ff16630',
-            Currency: 'RP',
+            Currency: 'IP',
             IsActive: false,
             ItemType: 1,
             SaleEndAt: '2026-02-10T00:00:00+00:00',
-            SalePrice: 1012,
-            PercentOff: 25,
+            SalePrice: 150000,
+            PercentOff: 0,
             RiotItemID: 875010,
-            NormalPrice: 1350,
+            NormalPrice: 150000,
             SaleStartAt: '2026-02-03T00:00:00+00:00',
         },
     },
@@ -190,6 +190,8 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/riot-points-icon.svg';
             case 'ME':
                 return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/mythic-essence-icon.svg';
+            case 'IP':
+                return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/blue-essence-icon.svg';
             default:
                 return 'https://wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/currencies/images/riot-points-icon.svg';
         }
@@ -201,6 +203,8 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 return 'text-primary';
             case 'ME':
                 return 'text-mythic';
+            case 'IP':
+                return 'text-blue';
             default:
                 return 'text-primary';
         }
@@ -343,6 +347,7 @@ export const WishlistNotificationEmailTemplate = ({
                             mythic: '#a855f7', // was: #a855f7 (darkened for contrast on light bg)
                             white: '#18181b', // was: (text-white #fafafa)
                             muted: '#71717a', // was: #a1a1aa
+                            blue: '#0acbe6',
                         },
                         fontFamily: {
                             sans: ['Arial', 'sans-serif'],
