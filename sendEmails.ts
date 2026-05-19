@@ -86,7 +86,9 @@ async function main() {
         ),
     );
 
-    console.log(`Sent ${pendingEmailLogs.length} emails.`);
+    console.log(
+        `Processed ${Object.keys(emailLogsByUser).length} user emails containing ${pendingEmailLogs.length} items.`,
+    );
 }
 
 main();
