@@ -75,3 +75,12 @@ export type EmailLogRecord = {
     MythicSale?: MythicSaleRecord | null;
     CatalogSale?: CatalogSaleRecord | null;
 };
+
+export type WishlistSaleMatchRecord = {
+    UserID: string;
+    ItemID: string;
+    SaleID: string;
+    SaleType: ShopType;
+    MythicSaleID: string | null;
+    CatalogSaleID: string | null;
+};
