@@ -6,7 +6,8 @@
         "build": "email build",
         "dev": "email dev",
         "export": "email export",
-        "pull:prod": "node --env-file=.env.prod pullEmails.js",
+        "pull-sales": "tsx pullSales.ts",
+        "pull-sales:prod": "tsx --env-file=.env.prod pullSales.ts",
         "send-emails": "tsx sendEmails.ts",
         "send-emails:prod": "tsx --env-file=.env.prod sendEmails.ts"
     },
