@@ -56,20 +56,17 @@ export class DiscordLogger {
         this.recordIssue('WARN', context);
     }
 
-    async finish() {
+    async finish(summary?: string) {
         if (this.hasIssues) {
             const level = this.errorCount > 0 ? 'ERROR' : 'WARN';
 
-            await this.queueMessage(
-                level,
-                this.formatIssueSummary(),
-            );
+            await this.queueMessage(level, this.formatIssueSummary(summary));
             return;
         }
 
         await this.queueMessage(
             'OK',
-            'Processing completed with no errors or warnings.',
+            summary ?? 'Processing completed with no errors or warnings.',
         );
     }
 
@@ -77,15 +74,21 @@ export class DiscordLogger {
         this.issues.push({ level, context: oneLine(context) });
     }
 
-    private formatIssueSummary() {
+    private formatIssueSummary(summary?: string) {
+        const summaryLine = summary
+            ? `${truncate(oneLine(summary), 300)}\n`
+            : '';
         const overview = `Overview: ${this.errorCount} error${
             this.errorCount === 1 ? '' : 's'
-        }, ${this.warningCount} warning${
-            this.warningCount === 1 ? '' : 's'
-        }.`;
+        }, ${this.warningCount} warning${this.warningCount === 1 ? '' : 's'}.`;
         const footer = '\nCheck stored logs for details.';
         const codeBlockOverhead = '\n```\n\n```'.length;
-        const maxCodeLength = 2048 - overview.length - footer.length - codeBlockOverhead;
+        const maxCodeLength =
+            2048 -
+            summaryLine.length -
+            overview.length -
+            footer.length -
+            codeBlockOverhead;
         const issueLines = this.issues
             .map(
                 (issue, index) =>
@@ -96,25 +99,19 @@ export class DiscordLogger {
             )
             .join('\n');
 
-        return `${overview}\n\`\`\`\n${truncate(
+        return `${summaryLine}${overview}\n\`\`\`\n${truncate(
             issueLines,
             maxCodeLength,
         )}\n\`\`\`${footer}`;
     }
 
-    private async queueMessage(
-        level: DiscordLogLevel,
-        context: string,
-    ) {
+    private async queueMessage(level: DiscordLogLevel, context: string) {
         await this.sendMessage(level, context).catch((error: unknown) => {
             console.warn('Failed to send Discord webhook message:', error);
         });
     }
 
-    private async sendMessage(
-        level: DiscordLogLevel,
-        context: string,
-    ) {
+    private async sendMessage(level: DiscordLogLevel, context: string) {
         const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
         if (!webhookUrl) {

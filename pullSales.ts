@@ -1,5 +1,8 @@
 import { supabase } from './lib/supabase.ts';
-import type { ShopType, WishlistSaleMatchRecord } from './lib/types.ts';
+import { DiscordLogger } from './lib/discordLogger.ts';
+import type { WishlistSaleMatchRecord } from './lib/types.ts';
+
+const logger = new DiscordLogger('pullSales');
 
 async function getActiveWishlistSaleMatches(): Promise<
     WishlistSaleMatchRecord[]
@@ -10,6 +13,7 @@ async function getActiveWishlistSaleMatches(): Promise<
 
     if (error) {
         console.error('Error fetching active wishlist sale matches:', error);
+        await logger.error('Error fetching active wishlist sale matches.');
         return [];
     }
 
@@ -39,6 +43,7 @@ async function UpsertEmailLogs(matches: WishlistSaleMatchRecord[]) {
 
     if (error) {
         console.error('Error upserting email logs:', error);
+        await logger.error('Error upserting wishlist email logs.');
     } else {
         console.log(`Email logs upserted successfully: ${emailLogs.length}`);
     }
@@ -49,4 +54,15 @@ async function main() {
     await UpsertEmailLogs(matches);
 }
 
-main();
+main()
+    .then(async () => {
+        await logger.finish();
+    })
+    .catch(async (error: unknown) => {
+        console.error('Unexpected error in pullSales:', error);
+        await logger.error(
+            'Unexpected error while pulling wishlist sale email logs.',
+        );
+        await logger.finish();
+        process.exitCode = 1;
+    });
