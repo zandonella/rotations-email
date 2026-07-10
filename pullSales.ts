@@ -32,6 +32,7 @@ async function UpsertEmailLogs(matches: WishlistSaleMatchRecord[]) {
         SentAt: null,
         MythicSaleID: match.MythicSaleID,
         CatalogSaleID: match.CatalogSaleID,
+        SanctumSaleID: match.SanctumSaleID,
     }));
 
     const { error } = await supabase

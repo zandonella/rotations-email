@@ -40,6 +40,18 @@ export type MythicSaleRecord = {
     SaleID: string;
 };
 
+export type SanctumSaleRecord = {
+    RiotItemID: number;
+    ItemType: number;
+    SaleID: string;
+    SaleStartAt: string;
+    SaleEndAt: string;
+    Rarity: 'EXALTED' | 'MYTHIC_VARIANT';
+    ChasePityThreshold: number;
+    BannerImageURL: string | null;
+    IsActive: boolean;
+};
+
 export type CatalogSaleWithItemRecord = CatalogSaleRecord & {
     CatalogItem: CatalogItemRecord;
 };
@@ -53,7 +65,7 @@ export type WishlistRecord = {
     ItemID: string;
 };
 
-export type ShopType = 'Catalog' | 'Mythic';
+export type ShopType = 'Catalog' | 'Mythic' | 'Sanctum';
 export type EmailStatus = 'PENDING' | 'SENT' | 'FAILED';
 
 export type ProfileRecord = {
@@ -70,10 +82,12 @@ export type EmailLogRecord = {
     SentAt: Date | null;
     MythicSaleID?: string | null;
     CatalogSaleID?: string | null;
+    SanctumSaleID?: string | null;
     CatalogItem: CatalogItemRecord;
     Profile: ProfileRecord;
     MythicSale?: MythicSaleRecord | null;
     CatalogSale?: CatalogSaleRecord | null;
+    SanctumSale?: SanctumSaleRecord | null;
 };
 
 export type WishlistSaleMatchRecord = {
@@ -83,4 +97,5 @@ export type WishlistSaleMatchRecord = {
     SaleType: ShopType;
     MythicSaleID: string | null;
     CatalogSaleID: string | null;
+    SanctumSaleID: string | null;
 };

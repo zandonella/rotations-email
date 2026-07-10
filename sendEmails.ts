@@ -10,7 +10,7 @@ async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
     const { data, error } = await supabase
         .from('WishlistEmailLog')
         .select(
-            '*, CatalogItem(*), Profile!inner(*), MythicSale(*), CatalogSale(*)',
+            '*, CatalogItem(*), Profile!inner(*), MythicSale(*), CatalogSale(*), SanctumSale(*)',
         )
         .eq('Status', 'PENDING')
         .eq('Profile.EmailStatus', 'active');

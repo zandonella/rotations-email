@@ -176,13 +176,49 @@ const sampleItems: EmailLogRecord[] = [
         },
         CatalogSale: null,
     },
+    {
+        UserID: '1e603970-7b78-447b-a443-48f5cc2c5102',
+        ItemID: 'f0645597-e328-41a8-9414-254289761a06',
+        Status: 'PENDING',
+        SentAt: null,
+        SaleID: 'ee3bef06-1f8d-4c08-8a15-cd6da79202fc',
+        SaleType: 'Sanctum',
+        MythicSaleID: null,
+        CatalogSaleID: null,
+        SanctumSaleID: 'ee3bef06-1f8d-4c08-8a15-cd6da79202fc',
+        CatalogItem: {
+            Name: 'Eclipse Eternal Aspect Diana',
+            ItemID: 'f0645597-e328-41a8-9414-254289761a06',
+            ImageURL:
+                '//wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/characters/diana/skins/skin77/images/diana_splash_tile_77.skins_diana_skin77.jpg',
+            ItemType: 1,
+            ChampionID: 131,
+            RiotItemID: 131077,
+            SkinlineID: 222,
+        },
+        Profile: {
+            id: '1e603970-7b78-447b-a443-48f5cc2c5102',
+            email: 'rhi@zando.dev',
+        },
+        MythicSale: null,
+        CatalogSale: null,
+        SanctumSale: {
+            RiotItemID: 131077,
+            ItemType: 1,
+            SaleID: 'ee3bef06-1f8d-4c08-8a15-cd6da79202fc',
+            SaleStartAt: '2026-05-28T18:00:00+00:00',
+            SaleEndAt: '2026-07-29T18:00:00+00:00',
+            Rarity: 'MYTHIC_VARIANT',
+            ChasePityThreshold: 40,
+            BannerImageURL:
+                '//wsrv.nl/?url=https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/uncentered/131/131077.jpg',
+            IsActive: true,
+        },
+    },
 ];
 
 function ItemCard({ item }: { item: EmailLogRecord }) {
-    const saleType = item.SaleType;
-    const { salePrice, normalPrice, currency, saleEndAt, percentOff } =
-        getSaleInfo(item);
-    const IconImageLink = getCurrencyIcon(currency);
+    const saleInfo = getSaleInfo(item);
 
     function getCurrencyIcon(currency: string) {
         switch (currency) {
@@ -217,15 +253,36 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
         return url;
     }
 
-    function getSaleInfo(item: EmailLogRecord): {
-        salePrice: number;
-        normalPrice?: number;
-        currency: string;
-        saleEndAt: string;
-        percentOff?: number;
-    } {
+    function getSaleInfo(item: EmailLogRecord):
+        | {
+              sanctum: true;
+              rarity: string;
+              pity: number;
+              saleEndAt: string;
+          }
+        | {
+              sanctum: false;
+              salePrice: number;
+              normalPrice?: number;
+              currency: string;
+              saleEndAt: string;
+              percentOff?: number;
+          } {
+        if (item.SaleType === 'Sanctum' && item.SanctumSale) {
+            return {
+                sanctum: true,
+                rarity:
+                    item.SanctumSale.Rarity === 'EXALTED'
+                        ? 'Exalted skin'
+                        : 'Mythic Variant',
+                pity: item.SanctumSale.ChasePityThreshold,
+                saleEndAt: item.SanctumSale.SaleEndAt,
+            };
+        }
+
         if (item.SaleType === 'Mythic' && item.MythicSale) {
             return {
+                sanctum: false,
                 salePrice: item.MythicSale.Price,
                 currency: item.MythicSale.Currency,
                 saleEndAt: item.MythicSale.SaleEndAt,
@@ -237,6 +294,7 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
 
             if (normalPrice === salePrice) {
                 return {
+                    sanctum: false,
                     salePrice,
                     normalPrice: undefined,
                     currency: item.CatalogSale.Currency,
@@ -246,6 +304,7 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
             }
 
             return {
+                sanctum: false,
                 salePrice: item.CatalogSale.SalePrice,
                 normalPrice: item.CatalogSale.NormalPrice,
                 currency: item.CatalogSale.Currency,
@@ -253,7 +312,12 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 percentOff: item.CatalogSale.PercentOff,
             };
         }
-        return { salePrice: 0, currency: '', saleEndAt: '' };
+        return {
+            sanctum: false,
+            salePrice: 0,
+            currency: '',
+            saleEndAt: '',
+        };
     }
 
     return (
@@ -266,43 +330,74 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 className="rounded-xl my-0 mx-auto"
                 width={250}
                 height={250}
-                src={normalizePhotoURL(item.CatalogItem?.ImageURL)}
+                src={normalizePhotoURL(item.CatalogItem.ImageURL)}
             />
             <p className="text-white text-[18px] leading-5 m-0 mt-3">
                 {item.CatalogItem.Name}
             </p>
-            <Row className="mt-1">
-                <Column>
-                    <Img
-                        alt={currency}
-                        className="inline-block align-middle pb-0.5"
-                        width={16}
-                        height={16}
-                        src={normalizePhotoURL(IconImageLink)}
-                    />
-                    <span
-                        className={
-                            getTextColor(currency) +
-                            ' inline-block align-middle text-[16px] leading-5 ml-1 font-bold'
-                        }
+            {saleInfo.sanctum ? (
+                <>
+                    <Text className="text-mythic text-[12px] font-bold leading-4 my-2">
+                        <span className="border-mythic border rounded-sm px-2 py-1">
+                            {saleInfo.rarity}
+                        </span>
+                    </Text>
+                    <Text className="text-white text-[14px] leading-5 my-1">
+                        Now available in the Sanctum
+                    </Text>
+                    <Text className="text-muted text-[13px] leading-5 my-0">
+                        Guaranteed within {saleInfo.pity} pulls
+                    </Text>
+                    <div className="text-muted text-[12px] leading-4 mt-1">
+                        Banner ends on{' '}
+                        {CalculateEndDateAndTime(saleInfo.saleEndAt)}
+                    </div>
+                    <Button
+                        href="https://rotations.lol/sanctum-calculator"
+                        className="bg-primary text-[14px] text-black font-bold rounded-md px-4 py-2 mt-3"
                     >
-                        {salePrice}
-                    </span>
-                    {normalPrice && (
-                        <span className="inline-block align-middle text-muted text-[14px] leading-5 ml-2 line-through">
-                            {normalPrice}
-                        </span>
-                    )}
-                    {percentOff && (
-                        <span className="inline-block align-middle text-primary text-[16px] font-bold leading-4.5 ml-2">
-                            {percentOff}% off
-                        </span>
-                    )}
-                </Column>
-            </Row>
-            <div className="text-muted text-[12px] leading-4 mt-1">
-                Sale ends on {CalculateEndDateAndTime(saleEndAt)}
-            </div>
+                        Open Sanctum calculator
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <Row className="mt-1">
+                        <Column>
+                            <Img
+                                alt={saleInfo.currency}
+                                className="inline-block align-middle pb-0.5"
+                                width={16}
+                                height={16}
+                                src={normalizePhotoURL(
+                                    getCurrencyIcon(saleInfo.currency),
+                                )}
+                            />
+                            <span
+                                className={
+                                    getTextColor(saleInfo.currency) +
+                                    ' inline-block align-middle text-[16px] leading-5 ml-1 font-bold'
+                                }
+                            >
+                                {saleInfo.salePrice}
+                            </span>
+                            {saleInfo.normalPrice && (
+                                <span className="inline-block align-middle text-muted text-[14px] leading-5 ml-2 line-through">
+                                    {saleInfo.normalPrice}
+                                </span>
+                            )}
+                            {saleInfo.percentOff && (
+                                <span className="inline-block align-middle text-primary text-[16px] font-bold leading-4.5 ml-2">
+                                    {saleInfo.percentOff}% off
+                                </span>
+                            )}
+                        </Column>
+                    </Row>
+                    <div className="text-muted text-[12px] leading-4 mt-1">
+                        Sale ends on{' '}
+                        {CalculateEndDateAndTime(saleInfo.saleEndAt)}
+                    </div>
+                </>
+            )}
         </Section>
     );
 }
