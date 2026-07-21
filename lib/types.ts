@@ -52,6 +52,14 @@ export type SanctumSaleRecord = {
     IsActive: boolean;
 };
 
+export type YourShopSaleRecord = {
+    ShopName: string;
+    SaleStartAt: string;
+    SaleEndAt: string;
+    HubEnabled: boolean;
+    IsActive: boolean;
+};
+
 export type CatalogSaleWithItemRecord = CatalogSaleRecord & {
     CatalogItem: CatalogItemRecord;
 };
