@@ -1,43 +1,11 @@
 import { supabase } from './lib/supabase.ts';
 import { DiscordLogger } from './lib/discordLogger.ts';
+import { getPendingEmailLogs, groupEmailLogsByUser, updateEmailLogStatuses } from './lib/emailQueue.ts';
 import type { EmailLogRecord, EmailStatus } from './lib/types.ts';
 import { sendWishlistEmail } from './sendRenderedEmail.tsx';
 import Bottleneck from 'bottleneck';
 
 const logger = new DiscordLogger('sendEmails');
-
-async function getPendingEmailLogs(): Promise<EmailLogRecord[]> {
-    const { data, error } = await supabase
-        .from('WishlistEmailLog')
-        .select(
-            '*, CatalogItem(*), Profile!inner(*), MythicSale(*), CatalogSale(*), SanctumSale(*)',
-        )
-        .eq('Status', 'PENDING')
-        .eq('Profile.EmailStatus', 'active');
-
-    if (error) {
-        console.error('Error fetching pending email logs:', error);
-        await logger.error('Error fetching pending wishlist email logs.');
-        return [];
-    }
-
-    return data;
-}
-
-function groupEmailLogsByUser(
-    emailLogs: EmailLogRecord[],
-): Record<string, EmailLogRecord[]> {
-    const emailLogsByUser: Record<string, EmailLogRecord[]> = {};
-
-    emailLogs.forEach((log) => {
-        if (!emailLogsByUser[log.UserID]) {
-            emailLogsByUser[log.UserID] = [];
-        }
-        emailLogsByUser[log.UserID].push(log);
-    });
-
-    return emailLogsByUser;
-}
 
 async function sendEmail(items: EmailLogRecord[]) {
     const senderEmail = items[0].Profile.email;
@@ -51,24 +19,6 @@ async function sendEmail(items: EmailLogRecord[]) {
     return result.success;
 }
 
-async function updateEmailLogStatuses(
-    logs: EmailLogRecord[],
-    status: EmailStatus,
-) {
-    const { error } = await supabase
-        .from('WishlistEmailLog')
-        .update({ Status: status, SentAt: new Date().toISOString() })
-        .eq('UserID', logs[0].UserID)
-        .eq('Status', 'PENDING');
-
-    if (error) {
-        console.error('Error updating email log statuses:', error);
-        await logger.error(
-            `Error updating email log statuses for user ${logs[0].UserID}.`,
-        );
-    }
-}
-
 async function processEmailLogs(logs: EmailLogRecord[]) {
     const succeeded = await sendEmail(logs);
     if (!succeeded) {
@@ -77,8 +27,9 @@ async function processEmailLogs(logs: EmailLogRecord[]) {
         );
     }
 
+    if (!succeeded) process.exitCode = 1;
     const newStatus: EmailStatus = succeeded ? 'SENT' : 'FAILED';
-    await updateEmailLogStatuses(logs, newStatus);
+    await updateEmailLogStatuses(supabase, logs, newStatus);
     console.log(
         `Processed email for user ${logs[0].UserID}: ${newStatus} (${logs.length} items)`,
     );
@@ -90,7 +41,7 @@ const limiter = new Bottleneck({
 });
 
 async function main() {
-    const pendingEmailLogs = await getPendingEmailLogs();
+    const pendingEmailLogs = await getPendingEmailLogs(supabase);
     const emailLogsByUser = groupEmailLogsByUser(pendingEmailLogs);
 
     await Promise.all(

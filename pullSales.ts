@@ -7,17 +7,18 @@ const logger = new DiscordLogger('pullSales');
 async function getActiveWishlistSaleMatches(): Promise<
     WishlistSaleMatchRecord[]
 > {
-    const { data, error } = await supabase.rpc(
-        'get_active_wishlist_sale_matches',
-    );
-
-    if (error) {
-        console.error('Error fetching active wishlist sale matches:', error);
-        await logger.error('Error fetching active wishlist sale matches.');
-        return [];
+    const matches: WishlistSaleMatchRecord[] = [];
+    for (let offset = 0; ; offset += 500) {
+        const { data, error } = await supabase.rpc('get_active_wishlist_sale_matches')
+            .order('UserID').order('ItemID').order('SaleID').range(offset, offset + 499);
+        if (error) {
+            console.error('Error fetching active wishlist sale matches:', error);
+            await logger.error('Error fetching active wishlist sale matches.');
+            throw new Error('Cannot fetch wishlist sale matches.');
+        }
+        matches.push(...(data ?? []));
+        if ((data ?? []).length < 500) return matches;
     }
-
-    return data ?? [];
 }
 
 async function UpsertEmailLogs(matches: WishlistSaleMatchRecord[]) {
@@ -45,6 +46,7 @@ async function UpsertEmailLogs(matches: WishlistSaleMatchRecord[]) {
     if (error) {
         console.error('Error upserting email logs:', error);
         await logger.error('Error upserting wishlist email logs.');
+        throw new Error('Cannot queue wishlist sale emails.');
     } else {
         console.log(`Email logs upserted successfully: ${emailLogs.length}`);
     }

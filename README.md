@@ -1,0 +1,11 @@
+Hourly production batches run on this machine immediately after successful on-the-hour shop ingestion. The ingestion runner publishes `production/rotations-ingestion/data/run/email-pull.json` only after success. Its systemd `ExecStartPost` starts `rotations-production-email.service`; half-hour completions skip delivery. The original `pullSales.ts` and `sendEmails.ts` still queue and send the batch using the original templates and SES sender.
+
+Configure `production/email.env` with `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION`, and `FROM_EMAIL`. Supabase and Discord configuration is already copied from ingestion. Keep this private file outside the repository.
+
+Each batch queues all active wishlist sale matches, preserving the unique `(UserID, ItemID, SaleID)` key and `ignoreDuplicates: true`. Previously sent matches remain sent. Each recipient receives one email containing all pending matches, including matches across shop types. A new sale ID can generate a new notification for a previously notified item. A later wishlist addition can generate a later email for that sale, as in the original system.
+
+An exclusive lock prevents overlapping managed batches. Successfully completed pull slots are recorded in `data/last-hourly-batch.json`. Failures stop dependent steps and cause a failed email service; ingestion status remains separate. Delivery status updates affect only rows included in the batch. The existing FAILED status policy is preserved: FAILED rows are not automatically retried. If SES accepts an email but database status recording fails, its pending records may be retried by a future batch; investigate the logs before retrying uncertain deliveries.
+
+Local logs are kept in `data/logs` and uploaded to Supabase's `logs` bucket after each attempted batch. Missing SES configuration prevents any queue mutation or delivery, but its error log is still uploaded using Supabase credentials. Sales ingestion also captures and uploads each run to the same bucket under sales_*.log, retaining local files under production/rotations-ingestion/data/logs. Unit templates are under `../rotations-ingestion/deploy/linux-production/`.
+
+Validation: `npm test`. Inspect operations with `systemctl --user status rotations-production-email.service` and `journalctl --user -u rotations-production-email.service`.

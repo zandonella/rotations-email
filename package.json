@@ -9,7 +9,8 @@
         "pull-sales": "tsx pullSales.ts",
         "pull-sales:prod": "tsx --env-file=.env.prod pullSales.ts",
         "send-emails": "tsx sendEmails.ts",
-        "send-emails:prod": "tsx --env-file=.env.prod sendEmails.ts"
+        "send-emails:prod": "tsx --env-file=.env.prod sendEmails.ts",
+        "test": "node --import tsx --test tests/emailQueue.test.ts tests/hourlyBatch.test.mjs"
     },
     "dependencies": {
         "@aws-sdk/client-ses": "^3.983.0",
