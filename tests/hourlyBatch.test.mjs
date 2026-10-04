@@ -40,3 +40,9 @@ test('configuration check uploads a log without sending, queuing, or consuming a
     assert.equal(f.run('--check-config').status,0);assert.equal(f.calls(),'uploadLogFile.ts\n');
     assert.equal(fs.existsSync(path.join(f.root,'data/last-hourly-batch.json')),false);
 });
+
+test('manual batch follows the same queue/send/upload order without consuming the hourly slot',t=>{
+    const f=fixture(t);fs.writeFileSync(f.marker,JSON.stringify({startedAt:'2026-10-04T03:30:01Z'}));
+    assert.equal(f.run('--run-now').status,0);assert.equal(f.calls(),'pullSales.ts\nsendEmails.ts\nuploadLogFile.ts\n');
+    assert.equal(fs.existsSync(path.join(f.root,'data/last-hourly-batch.json')),false);
+});

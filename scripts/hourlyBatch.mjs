@@ -5,13 +5,14 @@ import { spawnSync } from 'node:child_process';
 const root = path.resolve(import.meta.dirname, '..');
 const production = path.resolve(root, '../production');
 const validateOnly = process.argv.includes('--check-config');
+const runNow = process.argv.includes('--run-now');
 const markerPath = path.join(production, 'rotations-ingestion/data/run/email-pull.json');
 const donePath = path.join(root, 'data/last-hourly-batch.json');
 fs.mkdirSync(path.dirname(donePath), { recursive: true, mode: 0o700 });
 const marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
 const slot = new Date(marker.startedAt);
 if (!Number.isFinite(slot.getTime())) throw new Error('Invalid ingestion slot.');
-if (!validateOnly && slot.getUTCMinutes() !== 0) {
+if (!validateOnly && !runNow && slot.getUTCMinutes() !== 0) {
     console.log('Not an on-the-hour pull; email batch skipped.');
     process.exit(0);
 }
@@ -19,7 +20,7 @@ let previous;
 try { previous = JSON.parse(fs.readFileSync(donePath, 'utf8')); } catch (error) {
     if (error.code !== 'ENOENT') throw error;
 }
-if (!validateOnly && previous?.startedAt === marker.startedAt) {
+if (!validateOnly && !runNow && previous?.startedAt === marker.startedAt) {
     console.log('This hourly email batch already completed.');
     process.exit(0);
 }
@@ -28,6 +29,7 @@ const logDirectory = path.join(root, 'data/logs');
 fs.mkdirSync(logDirectory, {recursive:true, mode:0o700});
 const logName = validateOnly
     ? `emails_config-check_${new Date().toISOString().replace(/[:.]/g, '-')}.log`
+    : runNow ? `emails_manual_${new Date().toISOString().replace(/[:.]/g, '-')}.log`
     : `emails_${slot.toISOString().replace(/[:.]/g, '-')}.log`;
 const logPath = path.join(logDirectory, logName);
 const fd = fs.openSync(logPath, 'a', 0o600);
@@ -49,9 +51,11 @@ try {
     } else {
         run('pullSales.ts');
         run('sendEmails.ts');
-        fs.writeFileSync(donePath + '.tmp', JSON.stringify({startedAt:marker.startedAt,completedAt:new Date().toISOString()}), {mode:0o600});
-        fs.renameSync(donePath + '.tmp',donePath);
-        console.log(`Hourly email batch complete after pull ${marker.startedAt}.`);
+        if (!runNow) {
+            fs.writeFileSync(donePath + '.tmp', JSON.stringify({startedAt:marker.startedAt,completedAt:new Date().toISOString()}), {mode:0o600});
+            fs.renameSync(donePath + '.tmp',donePath);
+        }
+        console.log(`${runNow ? 'Manual' : 'Hourly'} email batch complete after pull ${marker.startedAt}.`);
     }
 } catch(error) {
     failure=error;

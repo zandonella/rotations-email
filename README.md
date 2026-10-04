@@ -9,3 +9,19 @@ An exclusive lock prevents overlapping managed batches. Successfully completed p
 Local logs are kept in `data/logs` and uploaded to Supabase's `logs` bucket after each attempted batch. Missing SES configuration prevents any queue mutation or delivery, but its error log is still uploaded using Supabase credentials. Sales ingestion also captures and uploads each run to the same bucket under sales_*.log, retaining local files under production/rotations-ingestion/data/logs. Unit templates are under `../rotations-ingestion/deploy/linux-production/`.
 
 Validation: `npm test`. Inspect operations with `systemctl --user status rotations-production-email.service` and `journalctl --user -u rotations-production-email.service`.
+
+Send one test email through the existing SES sender and template with five sample wishlist items:
+
+```bash
+npm run test-email -- --to test@zando.dev
+```
+
+The test uses `production/email.env`, uploads its test log, and never reads or updates the customer queue. It reports SES acceptance; confirm inbox delivery and formatting separately.
+
+Run one customer catch-up batch immediately:
+
+```bash
+npm run emails:run-now
+```
+
+This acquires the hourly batch lock and runs `pullSales.ts`, `sendEmails.ts`, then log upload. It bypasses the hourly scheduling check without consuming the next scheduled batch. Existing sent rows remain sent, so only pending matches are emailed.
