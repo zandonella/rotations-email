@@ -125,7 +125,7 @@ export class DiscordLogger {
         }
 
         const roleId = getMentionRoleId();
-        const mentionRoleId = roleId && level !== 'OK' ? roleId : undefined;
+        const mentionRoleId = roleId && level === 'ERROR' ? roleId : undefined;
         const content = mentionRoleId ? `<@&${mentionRoleId}>` : undefined;
 
         const response = await fetch(webhookUrl, {
@@ -137,9 +137,10 @@ export class DiscordLogger {
                 content,
                 allowed_mentions: mentionRoleId
                     ? {
+                          parse: [],
                           roles: [mentionRoleId],
                       }
-                    : undefined,
+                    : { parse: [] },
                 embeds: [
                     {
                         title: `${level}: ${this.scriptName}`,
