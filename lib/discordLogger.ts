@@ -56,13 +56,15 @@ export class DiscordLogger {
         this.recordIssue('WARN', context);
     }
 
-    async finish(summary?: string) {
+    async finish(summary?: string, changedCount = 0) {
         if (this.hasIssues) {
             const level = this.errorCount > 0 ? 'ERROR' : 'WARN';
 
             await this.queueMessage(level, this.formatIssueSummary(summary));
             return;
         }
+
+        if (changedCount <= 0) return;
 
         await this.queueMessage(
             'OK',

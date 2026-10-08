@@ -12,15 +12,17 @@ fs.mkdirSync(path.dirname(donePath), { recursive: true, mode: 0o700 });
 const marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
 const slot = new Date(marker.startedAt);
 if (!Number.isFinite(slot.getTime())) throw new Error('Invalid ingestion slot.');
-if (!validateOnly && !runNow && slot.getUTCMinutes() !== 0) {
-    console.log('Not an on-the-hour pull; email batch skipped.');
-    process.exit(0);
-}
+const completed = Date.parse(marker.completedAt);
+if (!validateOnly && !runNow && (
+    typeof marker.runId !== 'string' || !/^[0-9a-f-]{36}$/.test(marker.runId) ||
+    !Number.isFinite(completed) || completed < slot.getTime() || completed > Date.now() + 60_000 ||
+    Date.now() - completed > 90 * 60_000
+)) throw new Error('Missing, stale, or invalid completed ingestion marker; email batch not started.');
 let previous;
 try { previous = JSON.parse(fs.readFileSync(donePath, 'utf8')); } catch (error) {
     if (error.code !== 'ENOENT') throw error;
 }
-if (!validateOnly && !runNow && previous?.startedAt === marker.startedAt) {
+if (!validateOnly && !runNow && (previous?.runId === marker.runId || previous?.startedAt === marker.startedAt)) {
     console.log('This hourly email batch already completed.');
     process.exit(0);
 }
@@ -39,26 +41,40 @@ const run = script => {
     });
     if (result.error || result.status !== 0) throw new Error(`${script} failed; see ${logPath}`);
 };
+const report = status => {
+    if (validateOnly || runNow || !marker.runId || !env.SUPABASE_URL || !env.SUPABASE_KEY) return;
+    env.EMAIL_RUN_ID = marker.runId;
+    const result = spawnSync(process.execPath, [path.join(root, 'scripts/reportBatch.mjs'), status], { cwd: root, env, stdio: ['ignore', fd, fd], timeout: 7000 });
+    if (result.status !== 0) fs.writeSync(fd, 'WARNING: Email status publication failed.\n');
+};
 let failure;
 try {
     env = { ...env, ...parseEnv(fs.readFileSync(path.join(production, 'email.env'), 'utf8')) };
     for (const key of ['SUPABASE_URL','SUPABASE_KEY','AWS_ACCESS_KEY','AWS_SECRET_KEY','AWS_REGION','FROM_EMAIL']) {
         if (!env[key]?.trim()) throw new Error(`Email configuration missing: ${key}; configure production/email.env.`);
     }
-    fs.writeSync(fd, `Hourly email batch after pull ${marker.startedAt}\n`);
+    // Reuse the ingestion API's authenticated cache destination without exposing private records.
+    const ingestion = parseEnv(fs.readFileSync(path.join(production, 'ingestion.env'), 'utf8'));
+    env.EMAIL_PUBLIC_API_URL ||= ingestion.ROTATIONS_API_REFRESH_URL || '';
+    env.EMAIL_PUBLIC_API_SECRET ||= ingestion.ROTATIONS_API_REFRESH_SECRET || '';
+    env.EMAIL_INGESTION_STARTED_AT = marker.startedAt;
+    fs.writeSync(fd, `Hourly email batch after pull ${marker.startedAt}; run ${marker.runId ?? 'manual'}\n`);
     if (validateOnly) {
         fs.writeSync(fd, 'Email configuration validated; no emails queued or sent.\n');
     } else {
+        report('running');
         run('pullSales.ts');
         run('sendEmails.ts');
         if (!runNow) {
-            fs.writeFileSync(donePath + '.tmp', JSON.stringify({startedAt:marker.startedAt,completedAt:new Date().toISOString()}), {mode:0o600});
+            fs.writeFileSync(donePath + '.tmp', JSON.stringify({runId:marker.runId,startedAt:marker.startedAt,completedAt:new Date().toISOString()}), {mode:0o600});
             fs.renameSync(donePath + '.tmp',donePath);
         }
+        report('ok');
         console.log(`${runNow ? 'Manual' : 'Hourly'} email batch complete after pull ${marker.startedAt}.`);
     }
 } catch(error) {
     failure=error;
+    report('error');
     fs.writeSync(fd, `ERROR: ${error.message}\n`);
 }
 finally {

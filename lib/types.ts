@@ -5,7 +5,7 @@ export type CatalogItemRecord = {
     ChampionID: number | null;
     Name: string;
     SkinlineID: number | null;
-    ImageURL: string;
+    ImageURL: string | null;
 };
 
 export type CatalogSaleRecord = {

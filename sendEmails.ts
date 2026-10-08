@@ -54,12 +54,12 @@ async function main() {
         Object.keys(emailLogsByUser).length
     } user emails containing ${pendingEmailLogs.length} items.`;
     console.log(summary);
-    return summary;
+    return { summary, processedCount: Object.keys(emailLogsByUser).length };
 }
 
 main()
-    .then(async (summary) => {
-        await logger.finish(summary);
+    .then(async ({ summary, processedCount }) => {
+        await logger.finish(summary, processedCount);
     })
     .catch(async (error: unknown) => {
         console.error('Unexpected error in sendEmails:', error);

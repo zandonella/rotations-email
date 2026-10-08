@@ -246,7 +246,8 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
         }
     }
 
-    function normalizePhotoURL(url: string): string {
+    function normalizePhotoURL(url: string | null): string {
+        if (!url) return '';
         if (url.startsWith('//')) {
             return 'https:' + url;
         }
@@ -330,7 +331,7 @@ function ItemCard({ item }: { item: EmailLogRecord }) {
                 className="rounded-xl my-0 mx-auto"
                 width={250}
                 height={250}
-                src={normalizePhotoURL(item.CatalogItem.ImageURL)}
+                src={normalizePhotoURL(item.CatalogItem.ImageURL) || undefined}
             />
             <p className="text-white text-[18px] leading-5 m-0 mt-3">
                 {item.CatalogItem.Name}

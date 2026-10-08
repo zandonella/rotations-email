@@ -10,9 +10,10 @@
         "pull-sales:prod": "tsx --env-file=.env.prod pullSales.ts",
         "send-emails": "tsx sendEmails.ts",
         "send-emails:prod": "tsx --env-file=.env.prod sendEmails.ts",
-        "test": "node --import tsx --test tests/emailQueue.test.ts tests/hourlyBatch.test.mjs",
+        "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
         "test-email": "tsx scripts/sendTestEmail.tsx",
-        "emails:run-now": "bash scripts/runHourlyBatch.sh --run-now"
+        "emails:run-now": "bash scripts/runHourlyBatch.sh --run-now",
+        "test:local-db": "node --import tsx tests/localWorkflow.mjs"
     },
     "dependencies": {
         "@aws-sdk/client-ses": "^3.983.0",
