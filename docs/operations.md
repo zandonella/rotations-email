@@ -35,6 +35,7 @@ For queue and delivery scripts, configure a private `.env` file with the followi
 | `DISCORD_MENTION_ROLE_ID` | An optional role mentioned for warnings and errors. |
 | `EMAIL_PUBLIC_API_URL` | The private API cache endpoint. |
 | `EMAIL_PUBLIC_API_SECRET` | The private API bearer secret. |
+| `EMAIL_INGESTION_STARTED_AT` | The ingestion start time used to require a confirmed rendering cache. The managed worker sets it from the completion marker. |
 
 Apply the backend email migration from [rotations-ingestion](https://github.com/zandonella/rotations-ingestion) before using the queue scripts. The [public API service](https://github.com/zandonella/rotations-api) provides the rendering cache.
 
@@ -57,11 +58,11 @@ Delivery commands send real email using the configured credentials. To send a sa
 npm run test-email -- --to you@example.com
 ```
 
-The sample sender leaves the customer queue untouched. The local database test uses Supabase at `127.0.0.1:55421`, requires sibling ingestion and API checkouts, and renders synthetic notifications without sending email or loading AWS credentials.
+The sample sender reads `../production/email.env`, sends sample items, uploads its log, and leaves the customer queue untouched. The local database test uses Supabase at `127.0.0.1:55421`, requires sibling ingestion and API checkouts, and renders synthetic notifications without sending email or loading AWS credentials.
 
 ## Managed deployment
 
-The ingestion repository provides Linux service templates under `deploy/linux-production/` and a [deployment guide](https://github.com/zandonella/rotations-ingestion/blob/main/docs/linux-production.md). Configure SES settings in a private `production/email.env` outside the repository. The managed worker receives Supabase and Discord configuration from ingestion.
+The managed layout places this checkout at `<runtime-root>/rotations-email` and ingestion at `<runtime-root>/production/rotations-ingestion`. The ingestion repository provides Linux service templates under `deploy/linux-production/` and a [deployment guide](https://github.com/zandonella/rotations-ingestion/blob/main/docs/linux-production.md). Configure SES settings in a private `production/email.env` outside the repository. Include Supabase credentials and optional Discord settings in `production/email.env`. The worker reads API refresh defaults and fallback log-upload credentials from `production/ingestion.env`. These files are maintained outside Git.
 
 Batch logs are retained in `data/logs` and uploaded to the Supabase `logs` bucket. Service status and journal entries are available through systemd.
 
